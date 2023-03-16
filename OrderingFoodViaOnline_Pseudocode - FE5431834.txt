@@ -1,0 +1,64 @@
+READ AND WRITE list_menu with LIST
+READ AND WRITE selected_list with LIST
+READ AND WRITE selected_menu with RECORD
+READ AND WRITE selecting with BOOLEAN
+
+STORE "list_menu" with "Menu List"
+STORE "selecting" with true
+
+WHILE selecting DO
+  DISPLAY "Menu:"
+  FOR i = 1 to length(list_menu) DO
+    DISPLAY i + ". " + list_menu(i).name + " (" + list_menu(i).stock + " available)"
+  END FOR
+
+  STORE "selected_menu" with "SELECTED" from list_menu(selectedIndex)
+  IF selected_menu.stock is 0 THEN
+    DISPLAY "Selected item is not available."
+    CONTINUE
+  END IF
+
+  selected_menu.stock Subtract by 1
+  ADD selected_menu into selected_list
+
+  DISPLAY "Item added to cart."
+  DISPLAY "Selected items:"
+  FOR i = 1 to length(selected_list) DO
+    DISPLAY i + ". " + selected_list(i).name + " (" + selected_list(i).stock + " available)"
+  END FOR
+
+  DISPLAY "Continue shopping? (yes or no)"
+  READ answer
+  IF answer is "yes" THEN
+    STORE selecting with true
+  ELSE
+    STORE selecting with false
+  END IF
+END WHILE
+
+STORE "totalPrice" with calculateTotal(selected_list)
+
+DISPLAY "Total price: " + totalPrice
+
+READ AND WRITE "usingCash" with BOOLEAN
+READ AND WRITE "credit" with NUMBER
+
+DISPLAY "Select payment method:"
+DISPLAY "1. Cash"
+DISPLAY "2. E-payment"
+
+READ paymentMethod
+IF paymentMethod is 1 THEN
+  STORE usingCash with true
+ELSE IF paymentMethod is 2 THEN
+  STORE usingCash with false
+  WHILE credit < totalPrice DO
+    DISPLAY "Credit is not enough. Please top up."
+    READ topupAmount
+    STORE "credit" with credit + topupAmount
+  END WHILE
+ELSE
+  DISPLAY "Invalid input. Payment canceled."
+END IF
+
+CALL payment()
